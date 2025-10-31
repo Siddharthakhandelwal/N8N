@@ -1,0 +1,856 @@
+{
+  "name": "5. Check Connection Request Accepted",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appTsI7XlBJ35Mxaq",
+          "mode": "list",
+          "cachedResultName": "Nick DiMauro Linkedin",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl6VIyIg5408R7P5",
+          "mode": "list",
+          "cachedResultName": "Connection Request Automation",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq/tbl6VIyIg5408R7P5"
+        },
+        "filterByFormula": "{Request Accepted} = ''",
+        "returnAll": false,
+        "limit": 3,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "First Name"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -736,
+        560
+      ],
+      "id": "fc2b9557-0fb7-4b3f-98a2-959cebad7875",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "5dPwU0FmCFuTx9WL",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the LinkedIn username from the profile URL\nreturn items.map(item => {\n  const rawUrl = item.json[\"LinkedIn Contact Profile URL\"] || \"\";\n  \n  // Match everything after 'linkedin.com/in/' using regex\n  const match = rawUrl.match(/linkedin\\.com\\/in\\/([^/?#]+)/i);\n  \n  const username = match ? decodeURIComponent(match[1]) : null;\n\n  return {\n    json: {\n      ...item.json,\n      linkedInUsername: username  // Add extracted username to item\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        592
+      ],
+      "id": "4b2a1d27-15b2-427c-958f-53d503440620",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appTsI7XlBJ35Mxaq",
+          "mode": "list",
+          "cachedResultName": "Nick DiMauro Linkedin",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl6VIyIg5408R7P5",
+          "mode": "list",
+          "cachedResultName": "Connection Request Automation",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq/tbl6VIyIg5408R7P5"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Search records').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Contact Profile URL",
+              "displayName": "LinkedIn Contact Profile URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Country",
+              "displayName": "Country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Request Sent",
+                  "value": "Request Sent"
+                },
+                {
+                  "name": "Request Already Sent",
+                  "value": "Request Already Sent"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                },
+                {
+                  "name": "Invalid URL",
+                  "value": "Invalid URL"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Request Accepted",
+              "displayName": "Request Accepted",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        320
+      ],
+      "id": "32dbe269-51b4-4b36-a8e6-ef7ae3e4d400",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "5dPwU0FmCFuTx9WL",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 18
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -976,
+        544
+      ],
+      "id": "2ab8793b-265c-4fd1-bfac-139b3aae8854",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -528,
+        560
+      ],
+      "id": "8ca5bf51-ece5-4a99-ac31-877ef8c438bf",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69e34ec1-37f4-4679-8b2d-a981b65ba943",
+              "leftValue": "={{ $json.network_distance }}",
+              "rightValue": "=FIRST_DEGREE",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        560
+      ],
+      "id": "8c0e9a07-4f26-4468-9f4f-475ba3cded13",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b44ec466-6094-4195-b5d3-2d0360d8779e",
+              "leftValue": "={{ $json.error.status }}",
+              "rightValue": 422,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        576
+      ],
+      "id": "2c0d1484-3fdc-4111-b6f4-2cb3089d4d58",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appTsI7XlBJ35Mxaq",
+          "mode": "list",
+          "cachedResultName": "Nick DiMauro Linkedin",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl6VIyIg5408R7P5",
+          "mode": "list",
+          "cachedResultName": "Connection Request Automation",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq/tbl6VIyIg5408R7P5"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Search records').item.json.id }}",
+            "Request Accepted": false
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Contact Profile URL",
+              "displayName": "LinkedIn Contact Profile URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Country",
+              "displayName": "Country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Request Sent",
+                  "value": "Request Sent"
+                },
+                {
+                  "name": "Request Already Sent",
+                  "value": "Request Already Sent"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                },
+                {
+                  "name": "Invalid URL",
+                  "value": "Invalid URL"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Request Accepted",
+              "displayName": "Request Accepted",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        544
+      ],
+      "id": "6c94c07c-3a7c-415b-bf9f-0edc2bf398d5",
+      "name": "Update record1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "5dPwU0FmCFuTx9WL",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appTsI7XlBJ35Mxaq",
+          "mode": "list",
+          "cachedResultName": "Nick DiMauro Linkedin",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl6VIyIg5408R7P5",
+          "mode": "list",
+          "cachedResultName": "Connection Request Automation",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq/tbl6VIyIg5408R7P5"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Search records').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Contact Profile URL",
+              "displayName": "LinkedIn Contact Profile URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Country",
+              "displayName": "Country",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Request Sent",
+                  "value": "Request Sent"
+                },
+                {
+                  "name": "Request Already Sent",
+                  "value": "Request Already Sent"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                },
+                {
+                  "name": "Invalid URL",
+                  "value": "Invalid URL"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Request Accepted",
+              "displayName": "Request Accepted",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1056,
+        736
+      ],
+      "id": "c6efde2c-2683-40da-8426-7c105768d650",
+      "name": "Update record2",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "5dPwU0FmCFuTx9WL",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1424,
+        976
+      ],
+      "id": "04a9ce38-3e9a-4aa7-8160-9734ebc7ae50",
+      "name": "Wait2",
+      "webhookId": "00b8abef-3b77-483f-9bc8-2b5abe281133"
+    },
+    {
+      "parameters": {
+        "url": "=https://api8.unipile.com:13864/api/v1/users/{{ $json.linkedInUsername }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "account_id",
+              "value": "dgJXdWMjSketTUTwC6f88w"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-KEY",
+              "value": "AL0kPvT8.7ty75xRWpMxQyegU/qAkiSDoiXuNC8J0gaySc61V8yo="
+            },
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -16,
+        464
+      ],
+      "id": "eb2e41d1-b3cc-4246-b3f4-16a9c01c1df0",
+      "name": "Retrieve Profile1",
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Profile1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Update record1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update record2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record1": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Profile1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedPerExecution": 5
+  },
+  "versionId": "a9abada0-92d6-4857-aa1b-9c8ae49fdaf9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f98405bb6381d329003a7d6568717203861a59d6e699e2d8e30bfa8706d84bf"
+  },
+  "id": "1ffVFaa3B9ZRO3Zn",
+  "tags": []
+}

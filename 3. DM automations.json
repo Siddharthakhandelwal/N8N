@@ -1,0 +1,963 @@
+{
+  "name": "3. DM automations",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appTsI7XlBJ35Mxaq",
+          "mode": "list",
+          "cachedResultName": "Nick DiMauro Linkedin",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblujAr0gWCDsQDXY",
+          "mode": "list",
+          "cachedResultName": "DM Automation",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq/tblujAr0gWCDsQDXY"
+        },
+        "filterByFormula": "{Status} = 'DM Pending'",
+        "returnAll": false,
+        "limit": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -736,
+        560
+      ],
+      "id": "53118a1c-5cfc-4e72-96bb-e2e9b553a326",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "5dPwU0FmCFuTx9WL",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Configuration ---\n// 1. Set the name of the field from your input node that holds the URL.\nconst urlInputFieldName = \"Profile Link\";\n\n// 2. Set the name for the new field that will hold the username.\nconst usernameOutputFieldName = \"linkedInUsername\";\n// --- End of Configuration ---\n\n\n// This loop processes each item that n8n passes to the Code node.\nfor (const item of items) {\n  const rawUrl = item.json[urlInputFieldName];\n  let username = null; // Default to null\n\n  // Check if the URL field actually exists and is a string\n  if (rawUrl && typeof rawUrl === 'string') {\n\n    // Regex to match the username part of the URL\n    // It looks for text between 'linkedin.com/in/' and the next '/', '?', or '#'.\n    const match = rawUrl.match(/linkedin\\.com\\/in\\/([^/?#]+)/i);\n    \n    // If a match was found, use the captured part (the username).\n    // decodeURIComponent handles special characters in URLs (e.g., %20 for a space).\n    if (match && match[1]) {\n      username = decodeURIComponent(match[1]);\n    }\n  }\n\n  // Add the new 'linkedInUsername' field to the item's JSON data.\n  // If no username was found, this will add 'null'.\n  item.json[usernameOutputFieldName] = username;\n}\n\n// Return all the modified items to the next node in your workflow.\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        576
+      ],
+      "id": "89bb7426-bf72-4394-8cc6-e4de39c92b08",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appTsI7XlBJ35Mxaq",
+          "mode": "list",
+          "cachedResultName": "Nick DiMauro Linkedin",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblujAr0gWCDsQDXY",
+          "mode": "list",
+          "cachedResultName": "DM Automation",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq/tblujAr0gWCDsQDXY"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Update Username').item.json.id }}",
+            "Status": "DM Sent"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true
+            },
+            {
+              "id": "Profile Link",
+              "displayName": "Profile Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "DM Sent",
+                  "value": "DM Sent"
+                },
+                {
+                  "name": "DM Pending",
+                  "value": "DM Pending"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Username",
+              "displayName": "Username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        320
+      ],
+      "id": "8ec7a691-cbf2-4d79-86e4-6ed5ade331e8",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "5dPwU0FmCFuTx9WL",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -528,
+        560
+      ],
+      "id": "1e743263-ae78-4ef6-a165-0669406c4fb7",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api8.unipile.com:13864/api/v1/users/{{ $json.fields.Username }}\n\n",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "account_id",
+              "value": "dgJXdWMjSketTUTwC6f88w"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-KEY",
+              "value": "9LgPzL5J.erfWboxlZ8OjjEdwppvLUW3GjFf4JFNsGJLxUdMESrw="
+            },
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        64,
+        576
+      ],
+      "id": "928b325b-9f82-4109-8bc5-18ecc702332d",
+      "name": "Retrieve Profile",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69e34ec1-37f4-4679-8b2d-a981b65ba943",
+              "leftValue": "={{ $json.object }}",
+              "rightValue": "=ChatStarted",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        416
+      ],
+      "id": "18b55cc8-7355-4bdb-8f63-006df63bf79e",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b44ec466-6094-4195-b5d3-2d0360d8779e",
+              "leftValue": "={{ $json.error.status }}",
+              "rightValue": 422,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        560
+      ],
+      "id": "c3a8449b-1540-4e15-b916-25a16abcac98",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appTsI7XlBJ35Mxaq",
+          "mode": "list",
+          "cachedResultName": "Nick DiMauro Linkedin",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblujAr0gWCDsQDXY",
+          "mode": "list",
+          "cachedResultName": "DM Automation",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq/tblujAr0gWCDsQDXY"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Search records').item.json.id }}",
+            "Status": "Error"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Profile Link",
+              "displayName": "Profile Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "DM Sent",
+                  "value": "DM Sent"
+                },
+                {
+                  "name": "DM Pending",
+                  "value": "DM Pending"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Username",
+              "displayName": "Username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        544
+      ],
+      "id": "a545b952-1d32-49bf-a372-f5ce912a947c",
+      "name": "Update record1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "5dPwU0FmCFuTx9WL",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "hours"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1424,
+        976
+      ],
+      "id": "75adf537-8780-4a41-9819-00f65095054c",
+      "name": "Wait2",
+      "webhookId": "aa651ae0-5a36-4cbe-97b3-4fa81093e1f6"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appTsI7XlBJ35Mxaq",
+          "mode": "list",
+          "cachedResultName": "Nick DiMauro Linkedin",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblujAr0gWCDsQDXY",
+          "mode": "list",
+          "cachedResultName": "DM test",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq/tblujAr0gWCDsQDXY"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Username": "={{ $json.linkedInUsername }}",
+            "id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Profile Link",
+              "displayName": "Profile Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "DM Sent",
+                  "value": "DM Sent"
+                },
+                {
+                  "name": "DM Pending",
+                  "value": "DM Pending"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Username",
+              "displayName": "Username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -144,
+        576
+      ],
+      "id": "13af60bc-b486-4f3b-8ecc-a22e1d70af6f",
+      "name": "Update Username",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "5dPwU0FmCFuTx9WL",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api8.unipile.com:13864/api/v1/chats",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-KEY",
+              "value": "9LgPzL5J.erfWboxlZ8OjjEdwppvLUW3GjFf4JFNsGJLxUdMESrw="
+            },
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "account_id",
+              "value": "dgJXdWMjSketTUTwC6f88w"
+            },
+            {
+              "name": "attendees_ids[]",
+              "value": "={{ $json.provider_id }}"
+            },
+            {
+              "name": "text",
+              "value": "=Hi {{ $json.first_name }},\n\nI’m reaching out because we’re building something in a space you probably wrestle with often....FSAs and HSAs.  For 50M+ Americans, these accounts are still confusing, fragmented, and underutilized.  We’re working on simplifying the experience end-to-end for employees and employers alike.\n\nI’d love for you to follow along with us at www.godaylii.com or here on LinkedIn (https://www.linkedin.com/company/godaylii/) as we share the journey.  And if you’re open, I’d value a quick conversation to hear your perspective on where employees run into the most pain with FSAs/HSAs.\n\nWould you be open to connecting for a short call?  You can book directly on my Calendly below.  Much appreciated!\nhttps://calendly.com/nick-godaylii/30min?month=2025-10\n\nBest,\nNick DiMauro\nCo-Founder & CEO, daylii\nwww.godaylii.com"
+            },
+            {
+              "name": "linkedin[api]",
+              "value": "classic"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        256,
+        544
+      ],
+      "id": "d186abac-bcfb-47bd-9702-cccbbbe2a972",
+      "name": "HTTP Request",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appTsI7XlBJ35Mxaq",
+          "mode": "list",
+          "cachedResultName": "Nick DiMauro Linkedin",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblujAr0gWCDsQDXY",
+          "mode": "list",
+          "cachedResultName": "DM Automation",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq/tblujAr0gWCDsQDXY"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Search records').item.json.id }}",
+            "Status": "Error"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Profile Link",
+              "displayName": "Profile Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "DM Sent",
+                  "value": "DM Sent"
+                },
+                {
+                  "name": "DM Pending",
+                  "value": "DM Pending"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Username",
+              "displayName": "Username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1056,
+        928
+      ],
+      "id": "4e46d4e6-7225-4485-9c96-f3fb747978b2",
+      "name": "Error Update",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "5dPwU0FmCFuTx9WL",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appTsI7XlBJ35Mxaq",
+          "mode": "list",
+          "cachedResultName": "Nick DiMauro Linkedin",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblujAr0gWCDsQDXY",
+          "mode": "list",
+          "cachedResultName": "DM Automation",
+          "cachedResultUrl": "https://airtable.com/appTsI7XlBJ35Mxaq/tblujAr0gWCDsQDXY"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Search records').item.json.id }}",
+            "Status": "Error"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Profile Link",
+              "displayName": "Profile Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "DM Sent",
+                  "value": "DM Sent"
+                },
+                {
+                  "name": "DM Pending",
+                  "value": "DM Pending"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Username",
+              "displayName": "Username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1056,
+        736
+      ],
+      "id": "b144551a-c693-4a7a-b093-c33081aa5f21",
+      "name": "Error Update1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "5dPwU0FmCFuTx9WL",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -928,
+        560
+      ],
+      "id": "7a2e9523-77cb-4b00-aa38-d8a4c3aab926",
+      "name": "Schedule Trigger1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Update Username",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Profile": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Update record1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Update1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update record1": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Username": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Update": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Update1": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e90b73ca-cadf-4568-82bb-a581c283eefc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3f98405bb6381d329003a7d6568717203861a59d6e699e2d8e30bfa8706d84bf"
+  },
+  "id": "3JGVsG5Vlhf06MP4",
+  "tags": []
+}
