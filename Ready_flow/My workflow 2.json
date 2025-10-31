@@ -1,0 +1,589 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/get-instagram-leads",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        0
+      ],
+      "id": "776f9a3b-2cf9-49c1-b79d-ecca9fd3e767",
+      "name": "Webhook",
+      "webhookId": "243ad08d-e564-446a-b7ab-4e7c2dbca1da"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the Gemini output\nlet raw = $json[\"output\"];\n\n// If it's an array (sometimes Gemini returns wrapped data)\nif (Array.isArray($json)) {\n  raw = $json[0][\"output\"];\n}\n\n// Remove Markdown-style code fences (```json ... ```)\nraw = raw.replace(/```json|```/g, \"\").trim();\n\nlet data;\ntry {\n  data = JSON.parse(raw);\n} catch (error) {\n  console.log(\"❌ Failed to parse Gemini JSON:\", raw);\n  throw new Error(\"Gemini output is not valid JSON. Check console for raw data.\");\n}\n\n// Return the structured data for next nodes\nreturn {\n  json: {\n    count: data.count,\n    niche: data.niche,\n    location: data.location,\n    searchQuery: `${data.niche} ${data.location}`\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "6729d49a-0127-4b2d-8a93-e11f6371d65e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract structured information from this query:\\nQuery: {{$json['query']}}\\nReturn in JSON with keys: count, niche, location.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "5257f288-1636-473e-9c4f-7f8a1adbebe9",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        176
+      ],
+      "id": "fd695305-f4db-4aa5-bb4e-10e2dd94d226",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1nwL75BzNMPiKuSZ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert Instagram researcher.\nGiven a niche and location, generate 5–10 popular and relevant Instagram hashtags\nthat would help find potential business profiles or posts.\nfor niche {{ $json.niche }}\nlocation {{ $json.location }}\nsearchquery {{ $json.searchQuery }}\nReturn JSON like:\n{\n  \"hashtags\": [\"#abudhabibuilders\", \"#uaeconstruction\", \"#dubairealestate\", ...]\n} ",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "5b152858-805b-4bd3-9472-49a76b41e63f",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        624,
+        160
+      ],
+      "id": "127eabdd-43ce-4fbf-86a1-bc8813167991",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1nwL75BzNMPiKuSZ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get raw Gemini output\nlet raw = $json[\"output\"];\n\n// Handle case if Gemini returns an array\nif (Array.isArray($json)) {\n  raw = $json[0][\"output\"];\n}\n\n// Remove Markdown formatting (```json ... ```)\nraw = raw.replace(/```json|```/g, \"\").trim();\n\nlet data;\ntry {\n  data = JSON.parse(raw);\n} catch (error) {\n  console.log(\"❌ Failed to parse Gemini output:\", raw);\n  throw new Error(\"Gemini output is not valid JSON. Check console for raw data.\");\n}\n\n// Extract hashtags\nlet hashtags = data.hashtags || [];\n\n// Clean them up (remove '#' and trim whitespace)\nlet cleanHashtags = hashtags.map(tag => tag.replace(/^#/, \"\").trim());\n\n// Return both versions (with and without #)\nreturn {\n  json: {\n    rawHashtags: hashtags,\n    cleanHashtags: cleanHashtags\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "69280a1e-e841-442f-bd3d-a09946d7d19c",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare proper Apify input\nreturn [\n  {\n    json: {\n      hashtags: $json.cleanHashtags,\n      resultsLimit: 5,\n      resultsType: \"posts\",\n      searchType: \"recent\",\n      proxyConfiguration: { useApifyProxy: true }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "1380da09-203f-4ca4-a359-79b85758e433",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://console.apify.com/actors/reGe1ST3OBgYZSsZJ/input",
+          "__regex": "https://console.apify.com/actors/([a-zA-Z0-9]+).*"
+        },
+        "customBody": "={{ $json }}"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        0
+      ],
+      "id": "42f30f53-ed00-43cd-afc2-5756f1a84ef9",
+      "name": "Run an Actor and get dataset",
+      "credentials": {
+        "apifyApi": {
+          "id": "qKjrzgUVKUX0M5qs",
+          "name": "Apify account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nconst profiles = [];\n\nfor (const item of items) {\n  const username = item.json.ownerUsername;\n  if (username && !seen.has(username)) {\n    seen.add(username);\n    profiles.push({ json: { username } });\n  }\n}\n\nreturn profiles;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        0
+      ],
+      "id": "f56e66a2-65b8-4c77-9d3b-2d2dcfd51b02",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "https://console.apify.com/actors/dSCLg0C3YEZ83HzYX/input",
+          "mode": "url"
+        },
+        "customBody": "={{ $json }}"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        0
+      ],
+      "id": "8bf989cd-aff8-431d-b27d-d3510c56140f",
+      "name": "Run an Actor and get dataset1",
+      "credentials": {
+        "apifyApi": {
+          "id": "qKjrzgUVKUX0M5qs",
+          "name": "Apify account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const usernames = items.map(item => item.json.username).filter(Boolean);\n\nreturn [\n  {\n    json: {\n      usernames,\n      resultsLimit: 10,\n      proxyConfiguration: { useApifyProxy: true }\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        0
+      ],
+      "id": "68be53d5-316b-4dcd-9aac-52ed685d620b",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const data = item.json || {};\n  const bio = data.biography || \"\";\n\n  // Extract contact info from bio\n  const emails = bio.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/g) || [];\n  const phones = bio.match(/\\+?\\d[\\d\\s-]{7,}/g) || [];\n\n  // Build output JSON for each lead\n  return {\n    json: {\n      // 🔹 Basic Identity\n      username: data.username || \"\",\n      fullName: data.fullName || \"\",\n      instagramUrl: data.url || \"\",\n      profilePicUrl: data.profilePicUrl || \"\",\n      isVerified: data.isVerified || false,\n      isBusiness: data.isBusinessAccount || false,\n      category: data.businessCategoryName || \"\",\n      accountType: data.accountType || \"personal\", // sometimes appears in output\n      privateAccount: data.isPrivate || false,\n\n      // 🔹 Contact Information\n      emails,\n      phones,\n      website: data.externalUrl || \"\",\n      whatsappNumber: data.whatsappNumber || \"\", // sometimes available\n      address: data.address || \"\", // sometimes parsed for business accounts\n\n      // 🔹 Profile Metrics\n      followersCount: data.followersCount || 0,\n      followingCount: data.followingCount || 0,\n      postsCount: data.postsCount || 0,\n      engagementRate: data.engagementRate || null, // if available in output\n      avgLikes: data.avgLikes || null,\n      avgComments: data.avgComments || null,\n\n      // 🔹 Biography\n      bio,\n      keywordsInBio: bio\n        .split(/\\s+/)\n        .filter(w => w.startsWith(\"#\") || /^[A-Za-z]+$/.test(w))\n        .slice(0, 10),\n\n      // 🔹 Content Insights (Latest Post)\n      recentPost: {\n        caption: data.latestPosts?.[0]?.caption || \"\",\n        hashtags: data.latestPosts?.[0]?.hashtags || [],\n        imageUrl: data.latestPosts?.[0]?.imageUrl || \"\",\n        postUrl: data.latestPosts?.[0]?.url || \"\",\n        location: data.latestPosts?.[0]?.locationName || \"\",\n        timestamp: data.latestPosts?.[0]?.timestamp || \"\",\n      },\n\n      // 🔹 Location / Region Info\n      country: data.countryCode || \"Unknown\",\n      city: data.cityName || \"\",\n      location: data.location || \"\",\n      timezone: data.timezone || \"\",\n\n      // 🔹 Source Metadata (for CRM tracking)\n      sourceType: data.sourceType || \"hashtag_search\",\n      sourceHashtag: data.hashtag || \"\",\n      sourceActor: \"Instagram-Hashtag-Scraper\",\n      dateCollected: new Date().toISOString(),\n      userasked :$('Edit Fields').first().json.output,\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2544,
+        0
+      ],
+      "id": "7fce71ba-aaf4-4740-a2dd-5e21f7474a22",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const data = item.json;\n\n  // Combine the most meaningful parts\n  const summary = `\n  Name: ${data.fullName || \"N/A\"}\n  Username: ${data.username}\n  Bio: ${data.bio}\n  Business Category: ${data.category || \"N/A\"}\n  Website: ${data.website || \"N/A\"}\n  Latest Caption: ${data.recentPost?.caption || \"N/A\"}\n  Hashtags: ${(data.recentPost?.hashtags || []).join(\", \")}\n  Followers: ${data.followersCount || 0}\n  `;\n\n  return {\n    json: {\n      username: data.username,\n      summary, // short profile summary for Gemini\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        -144
+      ],
+      "id": "5ff38b41-8c45-4fbd-8004-da5ebfef70e4",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2896,
+        160
+      ],
+      "id": "f1c4d4d6-cd53-47cc-b7fb-178a196b6a35",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an intelligent lead-enrichment and categorization assistant.\n\nYou will be given structured JSON data from a social media profile (mainly Instagram).  \nYour job is to understand what this account represents and return a clean, structured JSON output summarizing it.\n\n---\n\n### INPUT:\n{{$json}}\n\n---\nyou have the instagram profile details , and and the user query -{{ $json.userasked }}, user want the leads so you need to analyze the leads and return a respnose whether this leads is useful or not .return true if l;eadss matched the user need otherwise false \noutput format must be -\n{\n  'output':'true'\n}\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        3216,
+        320
+      ],
+      "id": "7b042796-c236-4afa-beb4-94c2015987d7",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        3136,
+        464
+      ],
+      "id": "3c957f61-e746-498f-83cd-91a9a6351377",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1nwL75BzNMPiKuSZ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "700536c5-1444-4556-810a-2593576181e4",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3568,
+        448
+      ],
+      "id": "f2348ad1-39b1-4040-a904-7ce097bec561",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "360713f4-ed4c-42b9-bb2e-d51bb06cf904",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        0
+      ],
+      "id": "8d586137-1ff3-4604-9454-efb037e761d1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        0
+      ],
+      "id": "495a7147-8a6a-439f-b511-cc0d868c1fcc",
+      "name": "Limit"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "query": "get 10 leads on builders from abu dhabi"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor and get dataset": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor and get dataset1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        []
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c69ce096-0b81-4a7a-aef6-196dcb4e73d3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9f72d5da8aa662dcbea2916db4a47d9f5aea1490d5a66719948804be36ea244b"
+  },
+  "id": "Xm0jxNGjfqXGfr2r",
+  "tags": []
+}
